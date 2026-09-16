@@ -1,7 +1,7 @@
 class Runeverything < Formula
   desc "Open-source remote agent for Intent Computing (pair via QR, no GUI)"
   homepage "https://github.com/foqerhk/runeverything"
-  version "0.1.0"
+  version "0.1.1"
   license "MIT"
 
   # Prefer prebuilt binaries from GitHub Releases (fast one-liner install).
@@ -10,22 +10,22 @@ class Runeverything < Formula
   on_macos do
     on_arm do
       url "https://github.com/foqerhk/runeverything/releases/download/v#{version}/runeverything_darwin_arm64.tar.gz"
-      sha256 "11447349566dff5b58d4872a86eb3223bcc21e2abf8ddfa74e8515d7288fbda8"
+      sha256 "93a9c7b2728aebb6cc111c4e77ec9d5a9435b620c5c97b586bef6212ce17e5f0"
     end
     on_intel do
       url "https://github.com/foqerhk/runeverything/releases/download/v#{version}/runeverything_darwin_amd64.tar.gz"
-      sha256 "a0b3f8115107d56ac25f3432051edcbe68a89aeb96f8960615cd065dd0c1376b"
+      sha256 "a1e55282b95f5270c76ad9781f2e19c8420091c4414533d2e5e835ddb38c8bd8"
     end
   end
 
   on_linux do
     on_arm do
       url "https://github.com/foqerhk/runeverything/releases/download/v#{version}/runeverything_linux_arm64.tar.gz"
-      sha256 "ac54c042e839e2ef5c7254dd917d024be0269a5d15890fc77293b8e327e5b866"
+      sha256 "4ca68381617d658132edb1a9997aec99cbae514e743d810b654c7276461d7092"
     end
     on_intel do
       url "https://github.com/foqerhk/runeverything/releases/download/v#{version}/runeverything_linux_amd64.tar.gz"
-      sha256 "1d8f251ab3da5fccaa111964efe1cc30bf728eb0f1d9d1e743439169e352c6ff"
+      sha256 "4f2998ea96193e7eccc432986582009a2610fe3e6fb4b4521b53f9f3bdecb1cf"
     end
   end
 
@@ -44,8 +44,12 @@ class Runeverything < Formula
       system "go", "build",
              *std_go_args(ldflags: "-s -w -X main.version=HEAD", output: bin/"runeverything"),
              "./cmd/agent"
+      system "go", "build",
+             *std_go_args(ldflags: "-s -w -X main.version=HEAD", output: bin/"runeverything-relay"),
+             "./cmd/relay"
     else
       bin.install "runeverything"
+      bin.install "runeverything-relay" if File.exist?("runeverything-relay")
     end
   end
 
@@ -63,12 +67,11 @@ class Runeverything < Formula
       Pair with KoKo (print QR):
         runeverything pair
 
-      Set relay URL (required for NAT traversal):
-        export RE_RELAY=wss://your-relay.example/ws
-        # or edit ~/.runeverything/config.json
-
-      Optional background service:
+      Background service (keeps agent alive; agent also prevents idle sleep):
         brew services start runeverything
+
+      Desktop tip: leave the Mac plugged in. Lock screen is fine; avoid Sleep.
+      Disable keep-awake with: export RE_KEEP_AWAKE=0
     EOS
   end
 
